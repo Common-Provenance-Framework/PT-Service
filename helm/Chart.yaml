@@ -1,0 +1,16 @@
+apiVersion: v2
+name: pt-service
+description: Helm chart for the PT (Provenance Traversal / distributed provenance search) service of the Common Provenance Framework.
+type: application
+version: 0.1.0
+appVersion: "0.0.1"
+keywords:
+  - cpf
+  - provenance
+  - pt
+  - traversal
+home: https://github.com/Common-Provenance-Framework/PT-Service
+sources:
+  - https://github.com/Common-Provenance-Framework/PT-Service
+maintainers:
+  - name: Common Provenance Framework

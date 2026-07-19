@@ -1,0 +1,70 @@
+replicaCount: 1
+
+image:
+  repository: cerit.io/commonprovenanceframework/pt-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+springProfilesActive: ""
+
+config:
+  TRAVERSER_CONCURRENCYDEGREE: "10"
+  TRAVERSER_OMITEMPTYRESULTS: "true"
+  TRAVERSER_PREFERPROVSERVICEFROMCONNECTORS: "false"
+  DEMOVALIDITYVERIFIER_AUTHHEADER: "Bearer full_access_token"
+
+existingSecret:
+  name: ""
+  keys: {}
+
+extraEnv: []
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 6
+readinessProbe:
+  httpGet:
+    path: /actuator/health
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  failureThreshold: 6
+startupProbe: {}
