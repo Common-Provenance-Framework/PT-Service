@@ -150,7 +150,7 @@ public class TraverserTest {
                     String authorizationHeader,
                     final JsonNode querySpecification
             ) {
-                return new BundleQueryResultDTO(new Token(null, "x"), testData.get(bundleId.getUri()).queryResult);
+                return new BundleQueryResultDTO(new Token("x"), testData.get(bundleId.getUri()).queryResult);
             }
 
             @Override public QualifiedName fetchPreferredBundleVersion(
@@ -177,7 +177,7 @@ public class TraverserTest {
                         testData.get(bundleId.getUri()).backwardConnectors :
                         testData.get(bundleId.getUri()).forwardConnectors;
 
-                return new BundleQueryResultDTO(new Token(null, "x"), objectMapper.valueToTree(connectors));
+                return new BundleQueryResultDTO(new Token("x"), objectMapper.valueToTree(connectors));
             }
         };
     }

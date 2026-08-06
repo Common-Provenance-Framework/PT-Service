@@ -1,8 +1,17 @@
 package cz.muni.xmichalk.integrity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.xmichalk.dto.token.Token;
-import org.erdtman.jcs.JsonCanonicalizer;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.text.ParseException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openprovenance.prov.model.QualifiedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,17 +20,44 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Base64;
-import java.util.List;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jwt.SignedJWT;
+
+import cz.muni.xmichalk.dto.token.Token;
 
 public class StorageDocumentIntegrityVerifier implements IIntegrityVerifier {
+    public static enum JwtHeaderItems {
+        TRUSTED_PARTY_URI("trustedPartyUri");
+
+        private final String label;
+
+        JwtHeaderItems(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return this.label;
+        }
+    }
+
+    public static enum JwtPayloadItems {
+        HASH_ALGORITHM("hash_alg"),
+        DOCUMENT_DIGEST("doc_digest"),
+        DOCUMENT_TIMESTAMP("doc_iat"),
+        ORGANIZATION_ID("org_id");
+
+        private final String label;
+
+        JwtPayloadItems(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return this.label;
+        }
+    }
+
     private static final Logger log = LoggerFactory.getLogger(StorageDocumentIntegrityVerifier.class);
 
     public boolean verifyIntegrity(QualifiedName document, Token token) {
@@ -30,27 +66,18 @@ public class StorageDocumentIntegrityVerifier implements IIntegrityVerifier {
 
     public boolean verifySignature(Token token) {
         try {
-            PublicKey publicKey = loadPublicKeyFromCertificate(token.data().additionalData().trustedPartyCertificate());
-
-            ObjectMapper mapper = new ObjectMapper();
-            String tokenDataJsonString = mapper.writeValueAsString(token.data());
-            byte[] canonized = new JsonCanonicalizer(tokenDataJsonString).getEncodedUTF8();
-
-            byte[] signatureBytes = Base64.getDecoder().decode(token.signature());
-
-            Signature verifier = Signature.getInstance("SHA256withECDSA");
-            verifier.initVerify(publicKey);
-            verifier.update(canonized);
-            return verifier.verify(signatureBytes);
-
+            X509Certificate cert = this.getCertificate(token.jwt());
+            ECPublicKey publicKey = (ECPublicKey) cert.getPublicKey();
+            return SignedJWT.parse(token.jwt()).verify(new ECDSAVerifier(publicKey));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean verifyTokenExists(QualifiedName document, Token token) {
-        String trustedPartyUri = token.data().additionalData().trustedPartyUri();
-        String url = trustedPartyUri + "/api/v1/organizations/" + token.data().originatorId() + "/tokens";
+    private boolean verifyTokenExists(QualifiedName document, Token token) {
+        String trustedPartyUri = this.getTrustedPartyUri(token.jwt());
+        String originatorId = this.getOriginatorId(token.jwt());
+        String url = trustedPartyUri + "/api/v1/organizations/" + originatorId + "/tokens";
         if (!url.startsWith("http")) {
             url = "http://" + url;
         }
@@ -58,8 +85,7 @@ public class StorageDocumentIntegrityVerifier implements IIntegrityVerifier {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<List<Token>> response = restTemplate.exchange(
                 url, HttpMethod.GET, null, new ParameterizedTypeReference<List<Token>>() {
-                }
-        );
+                });
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             log.error("Get document token API call failed with status: {}", response.getStatusCode());
@@ -108,5 +134,70 @@ public class StorageDocumentIntegrityVerifier implements IIntegrityVerifier {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    private X509Certificate getCertificate(String jwt) {
+        try {
+            List<Base64> certChain = SignedJWT.parse(jwt).getHeader().getX509CertChain();
+
+            if (certChain == null)
+                throw new IllegalArgumentException(
+                        "The X.509 certificate chain parameter is not specified in JWT Token.");
+
+            if (certChain.size() == 0)
+                throw new IllegalArgumentException(
+                        "The X.509 certificate chain parameter is empty in JWT Token.");
+
+            if (certChain.size() != 1)
+                throw new IllegalArgumentException(
+                        "There is more then one X.509 certificate in certificate chain parameter.");
+
+            return certChain.stream()
+                    .map(Base64::decode)
+                    .map(ByteArrayInputStream::new)
+                    .map(stream -> {
+                        try {
+                            return (X509Certificate) CertificateFactory
+                                    .getInstance("X.509")
+                                    .generateCertificate(stream);
+                        } catch (CertificateException e) {
+                            throw new IllegalArgumentException("Token is not valid JWT Token", e);
+                        }
+                    })
+                    .collect(Collectors.toList())
+                    .getFirst();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Token is not valid JWT Token", e);
+        }
+    }
+
+    private String getTrustedPartyUri(String jwt) {
+        try {
+            Object uri = SignedJWT
+                    .parse(jwt)
+                    .getHeader().getCustomParam(JwtHeaderItems.TRUSTED_PARTY_URI.getLabel())
+                    .toString();
+
+            if (uri == null)
+                throw new IllegalArgumentException("'trustedPartyUri' parameter is missing in JWT Header.");
+            return (String) uri;
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Token is not valid JWT Token", e);
+        }
+    }
+
+    private String getOriginatorId(String jwt) {
+        try {
+            String id = SignedJWT
+                    .parse(jwt)
+                    .getJWTClaimsSet()
+                    .getStringClaim(JwtPayloadItems.ORGANIZATION_ID.getLabel());
+
+            if (id == null)
+                throw new IllegalArgumentException("'org_id' parameter is missing in JWT Payload.");
+            return id;
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Token is not valid JWT Token", e);
+        }
     }
 }
