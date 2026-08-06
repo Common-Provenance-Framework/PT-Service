@@ -1,0 +1,8 @@
+server:
+  port: ${PT_SERVICE_PORT:8080}
+traverser:
+  concurrencyDegree: 10
+  omitEmptyResults: true
+  preferProvServiceFromConnectors: false
+demoValidityVerifier:
+  authHeader: Bearer full_access_token
