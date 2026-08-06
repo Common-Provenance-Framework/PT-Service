@@ -321,8 +321,8 @@ public class Traverser {
         if (queryResult == null || findConnectorsResult == null) {
             return false;
         }
-        return integrityVerifier.verifyIntegrity(bundleId, queryResult.token) &&
-                integrityVerifier.verifyIntegrity(bundleId, findConnectorsResult.token);
+        return integrityVerifier.verifyIntegrity(bundleId, queryResult.jwt) &&
+                integrityVerifier.verifyIntegrity(bundleId, findConnectorsResult.jwt);
     }
 
     private List<Map.Entry<EValidityCheck, Boolean>> evaluateValidityChecks(

@@ -14,8 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-
 public class ProvServiceAPI implements IProvServiceAPI {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
