@@ -1,8 +1,8 @@
 package cz.muni.xmichalk.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import cz.muni.xmichalk.traversalPriority.ETraversalPriority;
 import cz.muni.xmichalk.validity.EValidityCheck;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 

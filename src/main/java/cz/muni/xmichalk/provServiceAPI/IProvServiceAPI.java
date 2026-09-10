@@ -1,6 +1,6 @@
 package cz.muni.xmichalk.provServiceAPI;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import cz.muni.xmichalk.dto.BundleQueryResultDTO;
 import org.openprovenance.prov.model.QualifiedName;
 

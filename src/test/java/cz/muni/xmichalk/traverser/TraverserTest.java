@@ -1,7 +1,5 @@
 package cz.muni.xmichalk.traverser;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.xmichalk.TestBundleData;
 import cz.muni.xmichalk.dto.BundleQueryResultDTO;
 import cz.muni.xmichalk.dto.ConnectorDTO;
@@ -17,6 +15,9 @@ import cz.muni.xmichalk.traversalPriority.ETraversalPriority;
 import cz.muni.xmichalk.traversalPriority.IntegrityThenOrderedValidity;
 import cz.muni.xmichalk.validity.EValidityCheck;
 import cz.muni.xmichalk.validity.IValidityVerifier;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.openprovenance.prov.model.QualifiedName;

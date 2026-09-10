@@ -1,7 +1,8 @@
 package cz.muni.xmichalk;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import cz.muni.xmichalk.dto.ConnectorDTO;
+import tools.jackson.databind.JsonNode;
+
 import org.openprovenance.prov.model.QualifiedName;
 
 import java.util.List;
