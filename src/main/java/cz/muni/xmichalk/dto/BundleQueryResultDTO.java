@@ -1,7 +1,7 @@
 package cz.muni.xmichalk.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import cz.muni.xmichalk.dto.token.Token;
+import tools.jackson.databind.JsonNode;
 
 public class BundleQueryResultDTO {
     public Token token;

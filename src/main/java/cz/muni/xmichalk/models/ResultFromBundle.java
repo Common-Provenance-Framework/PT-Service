@@ -1,6 +1,6 @@
 package cz.muni.xmichalk.models;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import cz.muni.xmichalk.validity.EValidityCheck;
 import org.openprovenance.prov.model.QualifiedName;
 

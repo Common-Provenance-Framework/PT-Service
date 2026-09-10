@@ -1,12 +1,12 @@
 package cz.muni.xmichalk.validity;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import cz.muni.xmichalk.dto.BundleQueryResultDTO;
 import cz.muni.xmichalk.models.ItemToTraverse;
 import cz.muni.xmichalk.provServiceAPI.IProvServiceAPI;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 public class DemoValidityVerifier implements IValidityVerifier {
@@ -24,7 +24,7 @@ public class DemoValidityVerifier implements IValidityVerifier {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             validitySpecification = objectMapper.readTree(validitySpecificationJson);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
 

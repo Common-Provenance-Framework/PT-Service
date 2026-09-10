@@ -1,7 +1,8 @@
 package cz.muni.xmichalk.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.openprovenance.prov.model.QualifiedName;
+
+import tools.jackson.databind.JsonNode;
 
 public class BundleQueryDTO {
     public QualifiedNameDTO bundleId;
