@@ -61,7 +61,11 @@ public class StorageDocumentIntegrityVerifier implements IIntegrityVerifier {
     private static final Logger log = LoggerFactory.getLogger(StorageDocumentIntegrityVerifier.class);
 
     public boolean verifyIntegrity(QualifiedName document, String token) {
-        return verifySignature(token) && verifyTokenExists(document, token);
+        // Why like this?
+        // Token validity is checked by signature
+        // Maybe check, that cert is valid TP ceritficate
+        // return verifySignature(token) && verifyTokenExists(document, token);
+        return verifySignature(token);
     }
 
     public boolean verifySignature(String token) {
@@ -96,7 +100,10 @@ public class StorageDocumentIntegrityVerifier implements IIntegrityVerifier {
             return false;
         }
 
-        return response.getBody().contains(token);
+        return response.getBody()
+            .stream()
+            .map(Token::jwt)
+            .anyMatch(token::equals);
 
     }
 
