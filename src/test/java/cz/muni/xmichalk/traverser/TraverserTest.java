@@ -1,10 +1,19 @@
 package cz.muni.xmichalk.traverser;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiPredicate;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.openprovenance.prov.model.QualifiedName;
+
 import cz.muni.xmichalk.TestBundleData;
 import cz.muni.xmichalk.dto.BundleQueryResultDTO;
 import cz.muni.xmichalk.dto.ConnectorDTO;
 import cz.muni.xmichalk.dto.QualifiedNameDTO;
-import cz.muni.xmichalk.dto.token.Token;
 import cz.muni.xmichalk.integrity.IIntegrityVerifier;
 import cz.muni.xmichalk.models.ItemToTraverse;
 import cz.muni.xmichalk.models.TraversalParams;
@@ -17,16 +26,6 @@ import cz.muni.xmichalk.validity.EValidityCheck;
 import cz.muni.xmichalk.validity.IValidityVerifier;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.openprovenance.prov.model.QualifiedName;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
 public class TraverserTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -151,7 +150,7 @@ public class TraverserTest {
                     String authorizationHeader,
                     final JsonNode querySpecification
             ) {
-                return new BundleQueryResultDTO(new Token(null, "x"), testData.get(bundleId.getUri()).queryResult);
+                return new BundleQueryResultDTO("x", testData.get(bundleId.getUri()).queryResult);
             }
 
             @Override public QualifiedName fetchPreferredBundleVersion(
@@ -178,7 +177,7 @@ public class TraverserTest {
                         testData.get(bundleId.getUri()).backwardConnectors :
                         testData.get(bundleId.getUri()).forwardConnectors;
 
-                return new BundleQueryResultDTO(new Token(null, "x"), objectMapper.valueToTree(connectors));
+                return new BundleQueryResultDTO("x", objectMapper.valueToTree(connectors));
             }
         };
     }

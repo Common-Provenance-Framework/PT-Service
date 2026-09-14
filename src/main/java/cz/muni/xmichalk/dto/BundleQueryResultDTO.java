@@ -1,17 +1,16 @@
 package cz.muni.xmichalk.dto;
 
-import cz.muni.xmichalk.dto.token.Token;
 import tools.jackson.databind.JsonNode;
 
 public class BundleQueryResultDTO {
-    public Token token;
+    public String jwt;
     public JsonNode result;
 
     public BundleQueryResultDTO() {
     }
 
-    public BundleQueryResultDTO(Token token, JsonNode result) {
-        this.token = token;
+    public BundleQueryResultDTO(String jwt, JsonNode result) {
+        this.jwt = jwt;
         this.result = result;
     }
 }
