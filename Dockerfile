@@ -9,7 +9,7 @@ COPY src/ src/
 RUN chmod +x mvnw
 RUN ./mvnw -B package -DskipTests
 
-FROM eclipse-temurin:26-jre-alpine-3.24@sha256:2c984601c59ac93f97947ce66d03df25c2e16bed97a28289fbc0ab157087f1b5 AS runtime
+FROM eclipse-temurin:26-jre-alpine-3.24@sha256:9eedff2367194d11eddd6f14101b444945a708c986270cd5716b934596ba3a31 AS runtime
 
 WORKDIR /app
 
