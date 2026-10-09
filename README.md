@@ -32,13 +32,15 @@ By default, the service listens on port `8080`. You can change the default port 
 
 The traverser needs the URI of a bundle's provenance access service ([PA-Service](https://github.com/Common-Provenance-Framework/PA-Service)) to fetch that bundle's data. It can obtain the URI from either the referencing connector's `cpm:provenanceServiceUri` attribute or the provenance service table. The table is especially important for the initial bundle because the traverser does not have a connector that references it.
 
-The demo table is loaded from `src/main/resources/provServiceTable.json` at startup. It is a JSON object whose keys are bundle URI prefixes and whose values are the corresponding prov-access service URIs. For example:
+The demo table is loaded from `src/main/resources/provServiceTable.json` at startup. It is a JSON object whose keys are bundle URI prefixes and whose values are the corresponding prov-access service URIs. The default entry:
 
 ```json
 {
-	"http://localhost:8080/api/v1/organizations/example/": "http://localhost:8082/api/"
+  "http://cpf-store:8080/api/v1/organizations/": "http://pa:8080/api/"
 }
 ```
+
+This maps every bundle in a CPF-Storage started with `STORE_URL=http://cpf-store:8080/api/v1/` to the PA-Service container named `pa`. Both URIs are resolved inside Docker, so use container names, not `localhost`.
 
 When looking up a bundle, the table uses the first key (in JSON insertion order) that is a prefix of the bundle URI. Add or update an entry to map bundles to the service that hosts them. Keep prefixes specific enough to avoid ambiguous matches. If no key matches, the table has no URI for that bundle and the connector value can be used instead.
 
