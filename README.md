@@ -15,10 +15,10 @@ docker build -t traversal-service .
 Run the container:
 
 ```sh
-docker run -p 8083:8080 --env-file .env traversal-service
+docker run -p 8083:8080 traversal-service
 ```
 
-By default, the service listens on port `8080`. You can change the default port using the `PT_SERVICE_PORT` environment variable (see `.env`).
+By default, the service listens on port `8080`. You can change it with the `PT_SERVICE_PORT` environment variable, e.g. `-e PT_SERVICE_PORT=9090 -p 8083:9090`.
 
 > Note: This service is normally deployed alongside one or more provenance access service instances ([PA-Service](https://github.com/Common-Provenance-Framework/PA-Service)) as part of the full demo setup described in the original project's README.
 
