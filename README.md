@@ -4,6 +4,8 @@ This service traverses a provenance chain in a specified direction. It fetches t
 
 ## Running with Docker
 
+Before building, check the [provenance service table](#provenance-service-table). It is copied into the image at build time.
+
 Build the Docker image from the project root directory:
 
 ```sh
