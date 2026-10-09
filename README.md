@@ -15,12 +15,12 @@ docker build -t traversal-service .
 Run the container:
 
 ```sh
-docker run -d --name pt --network cpf-net -p 8083:8080 traversal-service
+docker run -d --name pt --network cpf-net -p 8084:8080 traversal-service
 ```
 
 - `--network cpf-net`: PA-Service and NRO-Service must be reachable from this container.
 
-By default, the service listens on port `8080`. You can change it with the `PT_SERVICE_PORT` environment variable, e.g. `-e PT_SERVICE_PORT=9090 -p 8083:9090`.
+By default, the service listens on port `8080`. You can change it with the `PT_SERVICE_PORT` environment variable, e.g. `-e PT_SERVICE_PORT=9090 -p 8084:9090`.
 
 > Note: This service is normally deployed alongside one or more provenance access service instances ([PA-Service](https://github.com/Common-Provenance-Framework/PA-Service)) as part of the full demo setup described in the original project's README.
 
@@ -59,7 +59,7 @@ Set this to `false` (the default) to prefer the table, or `true` to prefer the c
 Once the service is running, the Swagger UI is available at:
 
 ```
-http://localhost:8083/swagger-ui/index.html#
+http://localhost:8084/swagger-ui/index.html#
 ```
 
 > Note that the service container must be running for the Swagger UI to load.
