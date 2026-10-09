@@ -15,8 +15,10 @@ docker build -t traversal-service .
 Run the container:
 
 ```sh
-docker run -p 8083:8080 traversal-service
+docker run -d --name pt --network cpf-net -p 8083:8080 traversal-service
 ```
+
+- `--network cpf-net`: PA-Service and NRO-Service must be reachable from this container.
 
 By default, the service listens on port `8080`. You can change it with the `PT_SERVICE_PORT` environment variable, e.g. `-e PT_SERVICE_PORT=9090 -p 8083:9090`.
 
