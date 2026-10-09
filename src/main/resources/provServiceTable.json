@@ -1,6 +1,3 @@
 {
-  "http://prov-storage-1:8000/api/v1/organizations/ORG1/": "http://prov-access-service-1:8000/api/",
-  "http://prov-storage-2:8000/api/v1/organizations/ORG2/": "http://prov-access-service-2:8000/api/",
-  "http://prov-storage-3:8000/api/v1/organizations/ORG3/": "http://prov-access-service-3:8000/api/",
-  "http://prov-storage-4:8000/api/v1/organizations/ORG4/": "http://prov-access-service-4:8000/api/"
+  "http://cpf-store:8080/api/v1/organizations/": "http://pa:8080/api/"
 }

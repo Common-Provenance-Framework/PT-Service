@@ -4,6 +4,8 @@ This service traverses a provenance chain in a specified direction. It fetches t
 
 ## Running with Docker
 
+Before building, check the [provenance service table](#provenance-service-table). It is copied into the image at build time.
+
 Build the Docker image from the project root directory:
 
 ```sh
@@ -13,10 +15,12 @@ docker build -t traversal-service .
 Run the container:
 
 ```sh
-docker run -p 8083:8080 --env-file .env traversal-service
+docker run -d --name pt --network cpf-net -p 8084:8080 traversal-service
 ```
 
-By default, the service listens on port `8080`. You can change the default port using the `PT_SERVICE_PORT` environment variable (see `.env`).
+- `--network cpf-net`: PA-Service and NRO-Service must be reachable from this container.
+
+By default, the service listens on port `8080`. You can change it with the `PT_SERVICE_PORT` environment variable, e.g. `-e PT_SERVICE_PORT=9090 -p 8084:9090`.
 
 > Note: This service is normally deployed alongside one or more provenance access service instances ([PA-Service](https://github.com/Common-Provenance-Framework/PA-Service)) as part of the full demo setup described in the original project's README.
 
@@ -30,13 +34,15 @@ By default, the service listens on port `8080`. You can change the default port 
 
 The traverser needs the URI of a bundle's provenance access service ([PA-Service](https://github.com/Common-Provenance-Framework/PA-Service)) to fetch that bundle's data. It can obtain the URI from either the referencing connector's `cpm:provenanceServiceUri` attribute or the provenance service table. The table is especially important for the initial bundle because the traverser does not have a connector that references it.
 
-The demo table is loaded from `src/main/resources/provServiceTable.json` at startup. It is a JSON object whose keys are bundle URI prefixes and whose values are the corresponding prov-access service URIs. For example:
+The demo table is loaded from `src/main/resources/provServiceTable.json` at startup. It is a JSON object whose keys are bundle URI prefixes and whose values are the corresponding prov-access service URIs. The default entry:
 
 ```json
 {
-	"http://localhost:8080/api/v1/organizations/example/": "http://localhost:8082/api/"
+  "http://cpf-store:8080/api/v1/organizations/": "http://pa:8080/api/"
 }
 ```
+
+This maps every bundle in a CPF-Storage started with `STORE_URL=http://cpf-store:8080/api/v1/` to the PA-Service container named `pa`. Both URIs are resolved inside Docker, so use container names, not `localhost`.
 
 When looking up a bundle, the table uses the first key (in JSON insertion order) that is a prefix of the bundle URI. Add or update an entry to map bundles to the service that hosts them. Keep prefixes specific enough to avoid ambiguous matches. If no key matches, the table has no URI for that bundle and the connector value can be used instead.
 
@@ -53,7 +59,7 @@ Set this to `false` (the default) to prefer the table, or `true` to prefer the c
 Once the service is running, the Swagger UI is available at:
 
 ```
-http://localhost:8083/swagger-ui/index.html#
+http://localhost:8084/swagger-ui/index.html#
 ```
 
 > Note that the service container must be running for the Swagger UI to load.
