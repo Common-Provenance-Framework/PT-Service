@@ -25,7 +25,7 @@
     <springdoc.version>3.1.1</springdoc.version>
     <httpclient.version>4.5.14</httpclient.version>
     <json.canonicalization.version>1.1</json.canonicalization.version>
-    <nimbus.version>10.9.1</nimbus.version>
+    <nimbus.version>10.10</nimbus.version>
   </properties>
 
   <dependencies>
