@@ -26,6 +26,7 @@ public interface IProvServiceAPI {
             QualifiedName bundleId,
             QualifiedName connectorId,
             String authorizationHeader,
-            boolean backward
+            boolean backward,
+            boolean enteredViaConnector
     );
 }

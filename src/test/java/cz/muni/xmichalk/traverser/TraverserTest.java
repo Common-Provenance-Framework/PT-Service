@@ -171,7 +171,8 @@ public class TraverserTest {
                     final QualifiedName bundleId,
                     final QualifiedName connectorId,
                     String authorizationHeader,
-                    final boolean backward
+                    final boolean backward,
+                    final boolean enteredViaConnector
             ) {
                 List<ConnectorDTO> connectors = backward ?
                         testData.get(bundleId.getUri()).backwardConnectors :

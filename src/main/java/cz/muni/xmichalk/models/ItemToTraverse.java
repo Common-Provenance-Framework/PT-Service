@@ -13,6 +13,8 @@ public class ItemToTraverse {
     public String provServiceUri;
     public boolean pathIntegrity;
     public List<Map.Entry<EValidityCheck, Boolean>> pathValidityChecks;
+    // bundle and connector that referenced this item, null for the user-given start
+    public Connection referencedFrom;
 
     public ItemToTraverse(
             QualifiedName bundleId,
