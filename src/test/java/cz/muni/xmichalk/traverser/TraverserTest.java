@@ -1,8 +1,10 @@
 package cz.muni.xmichalk.traverser;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
@@ -15,6 +17,7 @@ import cz.muni.xmichalk.dto.BundleQueryResultDTO;
 import cz.muni.xmichalk.dto.ConnectorDTO;
 import cz.muni.xmichalk.dto.QualifiedNameDTO;
 import cz.muni.xmichalk.integrity.IIntegrityVerifier;
+import cz.muni.xmichalk.models.Connection;
 import cz.muni.xmichalk.models.ItemToTraverse;
 import cz.muni.xmichalk.models.TraversalParams;
 import cz.muni.xmichalk.models.TraversalResults;
@@ -142,6 +145,13 @@ public class TraverserTest {
     }
 
     private static IProvServiceAPI getMockedProvServiceAPI(Map<String, TestBundleData> testData) {
+        return getMockedProvServiceAPI(testData, new ConcurrentHashMap<>());
+    }
+
+    private static IProvServiceAPI getMockedProvServiceAPI(
+            Map<String, TestBundleData> testData,
+            Map<Connection, Boolean> enteredViaConnectorByConnection
+    ) {
         return new IProvServiceAPI() {
             @Override public BundleQueryResultDTO fetchBundleQueryResult(
                     final String serviceUri,
@@ -174,6 +184,7 @@ public class TraverserTest {
                     final boolean backward,
                     final boolean enteredViaConnector
             ) {
+                enteredViaConnectorByConnection.put(new Connection(bundleId, connectorId), enteredViaConnector);
                 List<ConnectorDTO> connectors = backward ?
                         testData.get(bundleId.getUri()).backwardConnectors :
                         testData.get(bundleId.getUri()).forwardConnectors;
@@ -256,6 +267,70 @@ public class TraverserTest {
         assert results.results.stream().allMatch(r -> r.pathIntegrity);
         assert results.results.stream().allMatch(r -> r.pathValidityChecks.stream().allMatch(Map.Entry::getValue));
         assert results.errors.isEmpty();
+    }
+
+    @Test public void test_enteredViaConnector_onlyForHops() {
+        Map<Connection, Boolean> enteredViaConnectorByConnection = new ConcurrentHashMap<>();
+        Traverser traverser = new Traverser(
+                getMockedProvServiceTable(),
+                getMockedProvServiceAPI(testDataSet1, enteredViaConnectorByConnection),
+                getMockedIntegrityVerifier(List.of()),
+                10,
+                true,
+                true,
+                getMockedValidityVerifiers(Map.of()),
+                getMockedPriorityComparators()
+        );
+
+        traverser.traverseChain(
+                bundleD, connD, new TraversalParams(
+                        true,
+                        null,
+                        "SPECIFIED",
+                        ETraversalPriority.INTEGRITY_THEN_ORDERED_VALIDITY_CHECKS,
+                        List.of(),
+                        null
+                )
+        );
+
+        assert enteredViaConnectorByConnection.equals(Map.of(
+                new Connection(bundleD, connD), false,
+                new Connection(bundleB, connB), true,
+                new Connection(bundleC, connC), true,
+                new Connection(bundleA, connA), true
+        ));
+    }
+
+    @Test public void test_hopError_namesReferencingBundle() {
+        Map<String, TestBundleData> bundleBFails = new HashMap<>(testDataSet1);
+        bundleBFails.remove(bundleB.getUri()); // mocked prov service fails while processing bundle B
+        Traverser traverser = new Traverser(
+                getMockedProvServiceTable(),
+                getMockedProvServiceAPI(bundleBFails),
+                getMockedIntegrityVerifier(List.of()),
+                10,
+                true,
+                true,
+                getMockedValidityVerifiers(Map.of()),
+                getMockedPriorityComparators()
+        );
+
+        TraversalResults results = traverser.traverseChain(
+                bundleD, connD, new TraversalParams(
+                        true,
+                        null,
+                        "SPECIFIED",
+                        ETraversalPriority.INTEGRITY_THEN_ORDERED_VALIDITY_CHECKS,
+                        List.of(),
+                        null
+                )
+        );
+
+        assert results.errors.size() == 1;
+        assert results.errors.iterator().next().startsWith(
+                "Error while processing bundle: http://example.org/bundleB"
+                        + " (entered via connector http://example.org/connB from bundle http://example.org/bundleD),"
+                        + " error: ");
     }
 
     @Test public void test_failedIntegrity() {
