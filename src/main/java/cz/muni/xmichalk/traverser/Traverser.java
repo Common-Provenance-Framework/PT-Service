@@ -182,7 +182,8 @@ public class Traverser {
                     itemToTraverse.bundleId,
                     itemToTraverse.connectorId,
                     traversalParams.authorizationHeader,
-                    traversalParams.traverseBackwards
+                    traversalParams.traverseBackwards,
+                    itemToTraverse.referencedFrom != null
             );
 
             boolean hasIntegrity = hasIntegrity(itemToTraverse.bundleId, queryResult, findConnectorsResult);
@@ -211,8 +212,11 @@ public class Traverser {
 
 
         } catch (Exception e) {
-            String errorMessage =
-                    "Error while processing bundle: " + itemToTraverse.bundleId.getUri() + ", error: " + e.getMessage();
+            String referencedFrom = itemToTraverse.referencedFrom == null ? "" :
+                    " (entered via connector " + itemToTraverse.referencedFrom.connectorId().getUri() +
+                            " from bundle " + itemToTraverse.referencedFrom.bundleId().getUri() + ")";
+            String errorMessage = "Error while processing bundle: " + itemToTraverse.bundleId.getUri() + referencedFrom +
+                    ", error: " + e.getMessage();
             log.error(errorMessage);
             traversalState.errors.add(errorMessage);
         } finally {
@@ -403,14 +407,16 @@ public class Traverser {
         for (ConnectorDTO connector : connectors) {
             if (connector == null || connector.referencedBundleId == null) continue;
 
-            newItemsToTraverse.add(new ItemToTraverse(
+            ItemToTraverse newItem = new ItemToTraverse(
                     connector.referencedBundleId.toQN(),
                     connector.referencedConnectorId.toQN(),
                     connector.referencedMetaBundleId != null ? connector.referencedMetaBundleId.toQN() : null,
                     getProvServiceUri(connector, provServiceTable, preferProvServiceFromConnectors),
                     itemTraversed.pathIntegrity && integrity,
                     combineValidityChecks(itemTraversed.pathValidityChecks, validityChecks)
-            ));
+            );
+            newItem.referencedFrom = new Connection(itemTraversed.bundleId, connector.id.toQN());
+            newItemsToTraverse.add(newItem);
         }
 
         return newItemsToTraverse;

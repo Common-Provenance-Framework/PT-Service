@@ -91,7 +91,8 @@ public class ProvServiceAPI implements IProvServiceAPI {
             QualifiedName bundleId,
             QualifiedName connectorId,
             String authorizationHeader,
-            boolean backward
+            boolean backward,
+            boolean enteredViaConnector
     ) {
         JsonNode query = null;
         try {
@@ -99,12 +100,13 @@ public class ProvServiceAPI implements IProvServiceAPI {
                                                       {
                                                         "type": "GetConnectors",
                                                         "backward": %s,
+                                                        "enteredViaConnector": %s,
                                                         "fromSubgraphs" : {
                                                           "type" : "DerivationPathFromStartNode",
                                                           "backward" : %s
                                                         }
                                                       }
-                                                  """.formatted(backward, backward));
+                                                  """.formatted(backward, enteredViaConnector, backward));
         } catch (JacksonException e) {
             throw new RuntimeException("Failed to create GetConnectors query JSON.", e);
         }
